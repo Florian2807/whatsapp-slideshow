@@ -1,5 +1,5 @@
 {
-  "name": "whatsapp-diashow",
+  "name": "whatsapp-slideshow",
   "version": "0.1.0",
   "description": "Password-protected slideshow dashboard with WhatsApp image import and browser playback.",
   "private": true,
