@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 
+import { isAuthenticated } from "@/lib/auth";
 import { getMediaFile } from "@/lib/media-store";
 
 export const dynamic = "force-dynamic";
@@ -8,6 +9,10 @@ export async function GET(
   _request: Request,
   context: RouteContext<"/api/media/[id]">,
 ) {
+  if (!(await isAuthenticated())) {
+    return new Response("Nicht angemeldet.", { status: 401 });
+  }
+
   const { id } = await context.params;
   const media = await getMediaFile(Number(id));
 

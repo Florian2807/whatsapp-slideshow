@@ -1,23 +1,18 @@
 import { NextResponse } from "next/server";
 
-import { isAuthenticated, requireSession } from "@/lib/auth";
+import { isAuthenticated } from "@/lib/auth";
 import { listMedia } from "@/lib/media-store";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const scope = searchParams.get("scope");
 
-  if (scope === "dashboard") {
-    await requireSession();
-  } else if (!(await isAuthenticated())) {
-    return NextResponse.json(await listMedia(), {
-      headers: {
-        "Cache-Control": "no-store",
-      },
-    });
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
   }
+
+  const scope = searchParams.get("scope");
 
   const includeHidden = scope === "dashboard";
   const media = await listMedia({ includeHidden });
