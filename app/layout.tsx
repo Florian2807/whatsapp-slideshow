@@ -7,8 +7,8 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "WhatsApp Diashow",
-  description: "Dashboard und Browser-Player fuer deine Raspberry-Diashow.",
+  title: "WhatsApp Slideshow",
+  description: "Dashboard und Browser-Player fuer deine Raspberry-Slideshow.",
 };
 
 export default function RootLayout({

@@ -1,7 +1,7 @@
 import path from "node:path";
 
 export const appConfig = {
-  appName: "WhatsApp Diashow",
+  appName: "WhatsApp Slideshow",
   loginCookieName: "slideshow_session",
   dashboardRefreshMs: 10_000,
   playerRefreshMs: 15_000,

@@ -1,4 +1,4 @@
-## WhatsApp Diashow
+## WhatsApp Slideshow
 
 Turn a Raspberry Pi, or spare browser into a photo slideshow that can be updated remotely through WhatsApp.
 

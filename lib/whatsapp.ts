@@ -146,6 +146,12 @@ async function handleIncomingMessage(message: Message) {
     return;
   }
 
+  const chat = await message.getChat();
+
+  if (chat.isGroup) {
+    return;
+  }
+
   const media = (await message.downloadMedia()) as MessageMedia | undefined;
 
   if (!media || !media.mimetype.startsWith("image/")) {
@@ -178,8 +184,6 @@ async function handleIncomingMessage(message: Message) {
     lastImportedAt: new Date().toISOString(),
     lastImportedSender: sender,
   });
-
-  const chat = await message.getChat();
 
   await Promise.allSettled([
     message.react("✅"),

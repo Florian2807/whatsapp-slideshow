@@ -3,11 +3,14 @@
 import Link from "next/link";
 
 import {
+  deleteSelectedMediaAction,
   deleteMediaAction,
+  hideSelectedMediaAction,
   hideMediaAction,
   logoutAction,
   uploadMediaAction,
 } from "@/app/dashboard/actions";
+import { GallerySelectionControls } from "@/app/dashboard/gallery-selection-controls";
 import { RefreshTicker } from "@/app/dashboard/refresh-ticker";
 import { WhatsAppPanel } from "@/app/dashboard/whatsapp-panel";
 import { requireSession } from "@/lib/auth";
@@ -40,7 +43,7 @@ export default async function DashboardPage() {
                 {appConfig.appName}
               </h1>
               <p className="mt-1 text-sm text-slate-600">
-                Verwalte deine Bildergalerie und starte die Diashow
+                Verwalte deine Bildergalerie und starte die Slideshow
               </p>
             </div>
             <div className="flex gap-3">
@@ -313,11 +316,113 @@ export default async function DashboardPage() {
 
         {/* Gallery */}
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-slate-900">Galerie</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              {media.length} Bilder · Chronologisch sortiert
-            </p>
+          <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-4">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Galerie</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                {media.length} Bilder · Chronologisch sortiert
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-2">
+                <span className="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Auswahl
+                </span>
+                <GallerySelectionControls formId="gallery-selection-form" />
+              </div>
+              <form
+                id="gallery-selection-form"
+                className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2"
+              >
+                <span className="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Aktionen
+                </span>
+                <button
+                  type="submit"
+                  formAction={hideSelectedMediaAction}
+                  title="Auswahl ausblenden"
+                  className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm font-medium text-amber-800 shadow-sm transition hover:border-amber-300 hover:bg-amber-50"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 3l18 18M10.584 10.587A2 2 0 0012 14a2 2 0 001.414-.586M9.88 5.09A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a9.97 9.97 0 01-4.132 5.411M6.228 6.228A9.956 9.956 0 002.458 12a9.97 9.97 0 004.132 5.411"
+                    />
+                  </svg>
+                  <span>Ausbl.</span>
+                </button>
+                <button
+                  type="submit"
+                  formAction={deleteSelectedMediaAction}
+                  title="Auswahl löschen"
+                  className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 shadow-sm transition hover:border-red-300 hover:bg-red-50"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3m-7 0h8"
+                    />
+                  </svg>
+                  <span>Löschen</span>
+                </button>
+                <button
+                  type="submit"
+                  formAction="/api/export"
+                  formMethod="get"
+                  title="Auswahl herunterladen"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M8 12l4 4m0 0l4-4m-4 4V4"
+                    />
+                  </svg>
+                  <span>ZIP</span>
+                </button>
+                <a
+                  href="/api/export?scope=all"
+                  title="Alle Bilder herunterladen"
+                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"
+                    />
+                  </svg>
+                  <span>Alle ZIP</span>
+                </a>
+              </form>
+            </div>
           </div>
 
           {media.length === 0 ? (
@@ -359,6 +464,16 @@ export default async function DashboardPage() {
                     key={item.id}
                     className="flex items-center gap-4 px-6 py-4 transition hover:bg-slate-50"
                   >
+                    <input
+                      type="checkbox"
+                      form="gallery-selection-form"
+                      data-gallery-selection
+                      name="id"
+                      value={item.id}
+                      aria-label={`${item.originalName ?? item.fileName} auswählen`}
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
+
                     {/* Thumbnail */}
                     <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
                       <img
@@ -395,6 +510,12 @@ export default async function DashboardPage() {
 
                     {/* Actions */}
                     <div className="flex gap-2 flex-shrink-0">
+                      <a
+                        href={`/api/export?id=${item.id}`}
+                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                      >
+                        Download
+                      </a>
                       <form action={toggleHidden}>
                         <button
                           type="submit"

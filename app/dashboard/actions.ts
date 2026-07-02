@@ -10,6 +10,17 @@ import {
   setMediaHidden,
 } from "@/lib/media-store";
 
+function getSelectedMediaIds(formData: FormData) {
+  return Array.from(
+    new Set(
+      formData
+        .getAll("id")
+        .map((value) => Number(value))
+        .filter((value) => Number.isInteger(value) && value > 0),
+    ),
+  );
+}
+
 async function refreshViews() {
   revalidatePath("/dashboard");
   revalidatePath("/player");
@@ -30,6 +41,32 @@ export async function hideMediaAction(id: number, hidden: boolean) {
 export async function deleteMediaAction(id: number) {
   await requireSession();
   await deleteMedia(id);
+  await refreshViews();
+}
+
+export async function hideSelectedMediaAction(formData: FormData) {
+  await requireSession();
+
+  const ids = getSelectedMediaIds(formData);
+
+  if (ids.length === 0) {
+    return;
+  }
+
+  await Promise.all(ids.map(async (id) => setMediaHidden(id, true)));
+  await refreshViews();
+}
+
+export async function deleteSelectedMediaAction(formData: FormData) {
+  await requireSession();
+
+  const ids = getSelectedMediaIds(formData);
+
+  if (ids.length === 0) {
+    return;
+  }
+
+  await Promise.all(ids.map(async (id) => deleteMedia(id)));
   await refreshViews();
 }
 

@@ -2,8 +2,7 @@
 
 "use client";
 
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { MediaItem } from "@/lib/media-store";
 
@@ -12,6 +11,22 @@ type SlideshowPlayerProps = {
   slideDurationMs: number;
   pollIntervalMs: number;
   randomOrder: boolean;
+};
+
+type FullscreenDocument = Document & {
+  webkitFullscreenElement?: Element | null;
+  webkitFullscreenEnabled?: boolean;
+  webkitExitFullscreen?: (() => Promise<void>) | (() => void);
+  mozFullScreenElement?: Element | null;
+  mozFullScreenEnabled?: boolean;
+  msFullscreenElement?: Element | null;
+  msFullscreenEnabled?: boolean;
+};
+
+type FullscreenContainerElement = HTMLDivElement & {
+  webkitRequestFullscreen?: (() => Promise<void>) | (() => void);
+  mozRequestFullScreen?: (() => Promise<void>) | (() => void);
+  msRequestFullscreen?: (() => Promise<void>) | (() => void);
 };
 
 function haveSameItems(left: MediaItem[], right: MediaItem[]) {
@@ -43,6 +58,49 @@ function prepareRoundItems(items: MediaItem[], randomOrder: boolean) {
   return randomOrder ? shuffleItems(items) : items;
 }
 
+function getFullscreenElement(documentRef: FullscreenDocument) {
+  return (
+    documentRef.fullscreenElement ??
+    documentRef.webkitFullscreenElement ??
+    documentRef.mozFullScreenElement ??
+    documentRef.msFullscreenElement ??
+    null
+  );
+}
+
+function isFullscreenEnabled(documentRef: FullscreenDocument) {
+  return Boolean(
+    documentRef.fullscreenEnabled ??
+      documentRef.webkitFullscreenEnabled ??
+      documentRef.mozFullScreenEnabled ??
+      documentRef.msFullscreenEnabled,
+  );
+}
+
+async function requestElementFullscreen(element: FullscreenContainerElement) {
+  if (element.requestFullscreen) {
+    await element.requestFullscreen();
+    return;
+  }
+
+  if (element.webkitRequestFullscreen) {
+    await element.webkitRequestFullscreen();
+    return;
+  }
+
+  if (element.mozRequestFullScreen) {
+    await element.mozRequestFullScreen();
+    return;
+  }
+
+  if (element.msRequestFullscreen) {
+    await element.msRequestFullscreen();
+    return;
+  }
+
+  throw new Error("Fullscreen unsupported");
+}
+
 export function SlideshowPlayer({
   initialItems,
   slideDurationMs,
@@ -60,6 +118,58 @@ export function SlideshowPlayer({
   const roundItemsRef = useRef(prepareRoundItems(initialItems, randomOrder));
   const pendingItemsRef = useRef<MediaItem[] | null>(null);
 
+  const activatePendingItems = useCallback((): boolean => {
+    const queuedItems = pendingItemsRef.current;
+
+    if (!queuedItems) {
+      return false;
+    }
+
+    roundItemsRef.current = queuedItems;
+    pendingItemsRef.current = null;
+    setRoundItems(queuedItems);
+    setPendingItems(null);
+    return true;
+  }, []);
+
+  const moveToNext = useCallback(() => {
+    setIndex((currentIndex) => {
+      const activeRound = roundItemsRef.current;
+
+      if (activeRound.length === 0) {
+        return 0;
+      }
+
+      const nextIndex = currentIndex + 1;
+
+      if (nextIndex < activeRound.length) {
+        return nextIndex;
+      }
+
+      if (activatePendingItems()) {
+        return 0;
+      }
+
+      return 0;
+    });
+  }, [activatePendingItems]);
+
+  const moveToPrevious = useCallback(() => {
+    setIndex((currentIndex) => {
+      const activeRound = roundItemsRef.current;
+
+      if (activeRound.length === 0) {
+        return 0;
+      }
+
+      if (currentIndex > 0) {
+        return currentIndex - 1;
+      }
+
+      return activeRound.length - 1;
+    });
+  }, []);
+
   useEffect(() => {
     roundItemsRef.current = roundItems;
   }, [roundItems]);
@@ -70,25 +180,40 @@ export function SlideshowPlayer({
 
   useEffect(() => {
     function syncFullscreenState() {
-      setIsFullscreen(document.fullscreenElement === containerRef.current);
+      setIsFullscreen(
+        getFullscreenElement(document as FullscreenDocument) ===
+          containerRef.current,
+      );
     }
 
     syncFullscreenState();
     document.addEventListener("fullscreenchange", syncFullscreenState);
+    document.addEventListener("webkitfullscreenchange", syncFullscreenState);
+    document.addEventListener("mozfullscreenchange", syncFullscreenState);
+    document.addEventListener("MSFullscreenChange", syncFullscreenState);
 
     return () => {
       document.removeEventListener("fullscreenchange", syncFullscreenState);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        syncFullscreenState,
+      );
+      document.removeEventListener("mozfullscreenchange", syncFullscreenState);
+      document.removeEventListener("MSFullscreenChange", syncFullscreenState);
     };
   }, []);
 
   async function enterFullscreen() {
-    if (!containerRef.current || !document.fullscreenEnabled) {
+    const documentRef = document as FullscreenDocument;
+    const element = containerRef.current as FullscreenContainerElement | null;
+
+    if (!element || !isFullscreenEnabled(documentRef)) {
       setFullscreenError("Dieser Browser unterstuetzt keinen Fullscreen-Modus.");
       return;
     }
 
     try {
-      await containerRef.current.requestFullscreen({ navigationUI: "hide" });
+      await requestElementFullscreen(element);
       setFullscreenError(null);
     } catch {
       setFullscreenError(
@@ -96,6 +221,26 @@ export function SlideshowPlayer({
       );
     }
   }
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        moveToNext();
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        moveToPrevious();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [moveToNext, moveToPrevious]);
 
   useEffect(() => {
     async function loadQueue() {
@@ -144,36 +289,13 @@ export function SlideshowPlayer({
     }
 
     const interval = window.setInterval(() => {
-      setIndex((currentIndex) => {
-        const activeRound = roundItemsRef.current;
-
-        if (activeRound.length === 0) {
-          return 0;
-        }
-
-        const nextIndex = currentIndex + 1;
-
-        if (nextIndex < activeRound.length) {
-          return nextIndex;
-        }
-
-        const queuedItems = pendingItemsRef.current;
-
-        if (queuedItems) {
-          roundItemsRef.current = queuedItems;
-          pendingItemsRef.current = null;
-          setRoundItems(queuedItems);
-          setPendingItems(null);
-        }
-
-        return 0;
-      });
+      moveToNext();
     }, slideDurationMs);
 
     return () => {
       window.clearInterval(interval);
     };
-  }, [roundItems.length, slideDurationMs]);
+  }, [moveToNext, roundItems.length, slideDurationMs]);
 
   const safeIndex =
     roundItems.length === 0 ? 0 : Math.min(index, roundItems.length - 1);
@@ -212,59 +334,34 @@ export function SlideshowPlayer({
             Noch keine sichtbaren Bilder
           </h1>
           <p className="text-base leading-7 text-zinc-400">
-            Sobald in der Bibliothek ein sichtbares Bild liegt, startet die Diashow automatisch.
+            Sobald in der Bibliothek ein sichtbares Bild liegt, startet die Slideshow automatisch.
           </p>
         </div>
       )}
 
-      {!isFullscreen ? (
-        <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/80 via-black/15 to-transparent p-6 sm:p-10">
-          <div className="w-full max-w-xl rounded-[2rem] border border-white/10 bg-black/65 p-6 text-center shadow-2xl shadow-black/40 backdrop-blur">
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-400">
-                Vollbildmodus
-              </p>
-              <h2 className="text-2xl font-semibold text-white sm:text-3xl">
-                Player im echten Fullscreen starten
-              </h2>
-              <p className="text-sm leading-6 text-zinc-300 sm:text-base">
-                Der Browser blendet seine Leisten aus und zeigt nur noch die Diashow an.
-                Zum Verlassen reicht spaeter <code className="rounded bg-white/10 px-1.5 py-0.5 text-zinc-100">Esc</code>.
-              </p>
-            </div>
+      <div className="pointer-events-none absolute left-5 top-5 rounded-2xl border border-white/10 bg-black/45 px-4 py-3 text-sm font-medium text-zinc-100 backdrop-blur">
+        {currentItem ? `${displayedPosition} / ${displayedTotal}` : "0 / 0"}
+      </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <button
-                type="button"
-                onClick={() => {
-                  void enterFullscreen();
-                }}
-                className="rounded-2xl bg-sky-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-sky-300"
-              >
-                Vollbild starten
-              </button>
-              <Link
-                href="/dashboard"
-                className="rounded-2xl border border-white/10 bg-white/[0.08] px-5 py-3 text-sm font-semibold text-zinc-100 transition hover:bg-white/[0.12]"
-              >
-                Zum Dashboard
-              </Link>
-            </div>
+      <div className="absolute right-5 top-5 flex max-w-xs flex-col items-end gap-3">
+        {!isFullscreen ? (
+          <button
+            type="button"
+            onClick={() => {
+              void enterFullscreen();
+            }}
+            className="rounded-2xl border border-white/10 bg-black/45 px-4 py-3 text-sm font-semibold text-zinc-100 backdrop-blur transition hover:bg-black/60"
+          >
+            Vollbild
+          </button>
+        ) : null}
 
-            {fullscreenError ? (
-              <p className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
-                {fullscreenError}
-              </p>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-
-      {isFullscreen ? (
-        <div className="pointer-events-none absolute left-5 top-5 rounded-2xl border border-white/10 bg-black/45 px-4 py-3 text-sm font-medium text-zinc-100 backdrop-blur">
-          {currentItem ? `${displayedPosition} / ${displayedTotal}` : "0 / 0"}
-        </div>
-      ) : null}
+        {fullscreenError ? (
+          <p className="rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100 backdrop-blur">
+            {fullscreenError}
+          </p>
+        ) : null}
+      </div>
 
     </div>
   );
