@@ -1,5 +1,6 @@
 import { isAuthenticated } from "@/lib/auth";
 import {
+  ensureWhatsAppAutostart,
   getWhatsAppStatus,
   restartWhatsApp,
   startWhatsApp,
@@ -19,6 +20,7 @@ export async function GET() {
   }
 
   try {
+    ensureWhatsAppAutostart();
     const status = await getWhatsAppStatus();
     return Response.json(status);
   } catch (error) {

@@ -12,16 +12,16 @@ export default async function SettingsPage() {
       {/* Header */}
       <header className="border-b border-slate-200 bg-white shadow-sm">
         <div className="mx-auto max-w-4xl px-4 py-5 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Einstellungen</h1>
+              <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Einstellungen</h1>
               <p className="mt-1 text-sm text-slate-600">
                 Konfiguriere Player, Speicher und Monitoring
               </p>
             </div>
             <Link
               href="/dashboard"
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Zurück
             </Link>
@@ -32,7 +32,7 @@ export default async function SettingsPage() {
       {/* Content */}
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="px-6 py-8">
+          <div className="px-4 py-6 sm:px-6 sm:py-8">
             <SettingsForm />
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 import QRCode from "qrcode";
@@ -61,6 +61,7 @@ type RuntimeInstance = {
 
 declare global {
   var __whatsappRuntime__: RuntimeInstance | undefined;
+  var __whatsappAutostartPromise__: Promise<void> | undefined;
 }
 
 function createInitialState(): RuntimeState {
@@ -108,11 +109,29 @@ function getWhatsAppAuthPath() {
   return path.join(appConfig.dataDir, "whatsapp-auth");
 }
 
+function getWhatsAppSessionPath() {
+  return path.join(getWhatsAppAuthPath(), "session-slideshow");
+}
+
 function ensureWhatsAppStorage() {
   const authPath = getWhatsAppAuthPath();
 
   if (!existsSync(authPath)) {
     mkdirSync(authPath, { recursive: true });
+  }
+}
+
+function hasPersistedWhatsAppSession() {
+  const sessionPath = getWhatsAppSessionPath();
+
+  if (!existsSync(sessionPath)) {
+    return false;
+  }
+
+  try {
+    return readdirSync(sessionPath).length > 0;
+  } catch {
+    return false;
   }
 }
 
@@ -363,6 +382,28 @@ export async function stopWhatsApp() {
 export async function restartWhatsApp() {
   await stopWhatsApp();
   return startWhatsApp();
+}
+
+export function ensureWhatsAppAutostart() {
+  const runtime = getRuntime();
+
+  if (
+    runtime.client ||
+    runtime.initializePromise ||
+    runtime.stopPromise ||
+    !hasPersistedWhatsAppSession()
+  ) {
+    return;
+  }
+
+  if (!globalThis.__whatsappAutostartPromise__) {
+    globalThis.__whatsappAutostartPromise__ = startWhatsApp()
+      .then(() => undefined)
+      .catch(() => undefined)
+      .finally(() => {
+        globalThis.__whatsappAutostartPromise__ = undefined;
+      });
+  }
 }
 
 export async function getWhatsAppStatus(): Promise<WhatsAppStatus> {

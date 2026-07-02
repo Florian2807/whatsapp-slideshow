@@ -116,7 +116,7 @@ export function WhatsAppPanel() {
 
   return (
     <section className="mb-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-6 py-4">
+      <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">WhatsApp-Empfang</h2>
@@ -124,7 +124,7 @@ export function WhatsAppPanel() {
               Bilder direkt aus WhatsApp in die Bibliothek uebernehmen.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             <button
               type="button"
               onClick={() => triggerAction("start")}
@@ -153,7 +153,7 @@ export function WhatsAppPanel() {
         </div>
       </div>
 
-      <div className="grid gap-6 px-6 py-6 lg:grid-cols-[1.5fr_1fr]">
+      <div className="grid gap-6 px-4 py-5 sm:px-6 sm:py-6 lg:grid-cols-[1.5fr_1fr]">
         <div className="space-y-5">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm font-medium text-slate-600">Status</span>
@@ -218,7 +218,7 @@ export function WhatsAppPanel() {
           ) : null}
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
             QR-Verbindung
           </h3>
@@ -228,7 +228,7 @@ export function WhatsAppPanel() {
               <img
                 src={status.qrDataUrl}
                 alt="WhatsApp QR-Code"
-                className="mx-auto w-full max-w-[18rem] rounded-lg border border-slate-200 bg-white p-3"
+                className="mx-auto w-full max-w-[16rem] rounded-lg border border-slate-200 bg-white p-3 sm:max-w-[18rem]"
               />
               <p className="text-sm text-slate-600">
                 In WhatsApp unter <strong>Verknuepfte Geraete</strong> scannen.

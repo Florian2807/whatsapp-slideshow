@@ -17,11 +17,13 @@ import { requireSession } from "@/lib/auth";
 import { appConfig } from "@/lib/config";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { getDashboardSummary, listMedia } from "@/lib/media-store";
+import { ensureWhatsAppAutostart } from "@/lib/whatsapp";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   await requireSession();
+  ensureWhatsAppAutostart();
 
   const [summary, media] = await Promise.all([
     getDashboardSummary(),
@@ -37,20 +39,20 @@ export default async function DashboardPage() {
       {/* Header */}
       <header className="border-b border-slate-200 bg-white shadow-sm">
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">
+              <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
                 {appConfig.appName}
               </h1>
               <p className="mt-1 text-sm text-slate-600">
                 Verwalte deine Bildergalerie und starte die Slideshow
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:flex lg:w-auto">
               <Link
                 href="/player"
                 target="_blank"
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
               >
                 <svg
                   className="h-4 w-4"
@@ -75,14 +77,14 @@ export default async function DashboardPage() {
               </Link>
               <Link
                 href="/dashboard/settings"
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 Einstellungen
               </Link>
               <form action={logoutAction}>
                 <button
                   type="submit"
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                   Abmelden
                 </button>
@@ -98,7 +100,7 @@ export default async function DashboardPage() {
 
         {/* Stats Grid */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600">Alle Bilder</p>
@@ -124,7 +126,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600">Im Player aktiv</p>
@@ -150,7 +152,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600">Ausgeblendet</p>
@@ -176,7 +178,7 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-600">Speicher</p>
@@ -204,11 +206,11 @@ export default async function DashboardPage() {
         </div>
 
         {/* Latest Image & Upload */}
-        <div className="mb-8 grid gap-8 lg:grid-cols-3">
+        <div className="mb-8 grid gap-6 lg:grid-cols-3 lg:gap-8">
           {/* Latest Image */}
           <div className="lg:col-span-2">
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-              <div className="border-b border-slate-200 px-6 py-4">
+              <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
                 <h2 className="text-lg font-semibold text-slate-900">
                   Neuester Eingang
                 </h2>
@@ -224,7 +226,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="mt-6 space-y-4">
                     <div>
-                      <h3 className="text-2xl font-bold text-slate-900">
+                      <h3 className="break-words text-xl font-bold text-slate-900 sm:text-2xl">
                         {latestItem.originalName ?? latestItem.fileName}
                       </h3>
                       <div className="mt-3 flex flex-wrap gap-3">
@@ -242,7 +244,7 @@ export default async function DashboardPage() {
                         </span>
                       </div>
                     </div>
-                    <div className="space-y-2 text-sm text-slate-600">
+                    <div className="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
                       <p>
                         <strong>Eingegangen:</strong> {formatDateTime(latestItem.createdAt)}
                       </p>
@@ -286,10 +288,10 @@ export default async function DashboardPage() {
 
           {/* Upload */}
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-200 px-6 py-4">
+            <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
               <h2 className="text-lg font-semibold text-slate-900">Test-Upload</h2>
             </div>
-            <form action={uploadMediaAction} className="space-y-4 p-6">
+            <form action={uploadMediaAction} className="space-y-4 p-4 sm:p-6">
               <div>
                 <label className="block text-sm font-medium text-slate-700">
                   Datei wählen
@@ -316,7 +318,7 @@ export default async function DashboardPage() {
 
         {/* Gallery */}
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-4">
+          <div className="flex flex-col gap-4 border-b border-slate-200 px-4 py-4 sm:px-6">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">Galerie</h2>
               <p className="mt-1 text-sm text-slate-600">
@@ -324,7 +326,7 @@ export default async function DashboardPage() {
               </p>
             </div>
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-              <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-2">
+              <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                 <span className="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                   Auswahl
                 </span>
@@ -332,16 +334,16 @@ export default async function DashboardPage() {
               </div>
               <form
                 id="gallery-selection-form"
-                className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2"
+                className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2 sm:flex sm:flex-wrap sm:items-center"
               >
-                <span className="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <span className="col-span-2 px-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 sm:col-auto">
                   Aktionen
                 </span>
                 <button
                   type="submit"
                   formAction={hideSelectedMediaAction}
                   title="Auswahl ausblenden"
-                  className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm font-medium text-amber-800 shadow-sm transition hover:border-amber-300 hover:bg-amber-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm font-medium text-amber-800 shadow-sm transition hover:border-amber-300 hover:bg-amber-50"
                 >
                   <svg
                     className="h-4 w-4"
@@ -362,7 +364,7 @@ export default async function DashboardPage() {
                   type="submit"
                   formAction={deleteSelectedMediaAction}
                   title="Auswahl löschen"
-                  className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 shadow-sm transition hover:border-red-300 hover:bg-red-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-700 shadow-sm transition hover:border-red-300 hover:bg-red-50"
                 >
                   <svg
                     className="h-4 w-4"
@@ -384,7 +386,7 @@ export default async function DashboardPage() {
                   formAction="/api/export"
                   formMethod="get"
                   title="Auswahl herunterladen"
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
                 >
                   <svg
                     className="h-4 w-4"
@@ -404,7 +406,7 @@ export default async function DashboardPage() {
                 <a
                   href="/api/export?scope=all"
                   title="Alle Bilder herunterladen"
-                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
                 >
                   <svg
                     className="h-4 w-4"
@@ -454,83 +456,86 @@ export default async function DashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-200">
-              {media.map((item) => {
-                const toggleHidden = hideMediaAction.bind(null, item.id, !item.hidden);
-                const deleteItem = deleteMediaAction.bind(null, item.id);
+              <div className="divide-y divide-slate-200">
+                {media.map((item) => {
+                  const toggleHidden = hideMediaAction.bind(null, item.id, !item.hidden);
+                  const deleteItem = deleteMediaAction.bind(null, item.id);
 
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-4 px-6 py-4 transition hover:bg-slate-50"
-                  >
-                    <input
-                      type="checkbox"
-                      form="gallery-selection-form"
-                      data-gallery-selection
-                      name="id"
-                      value={item.id}
-                      aria-label={`${item.originalName ?? item.fileName} auswählen`}
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                    />
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex flex-col gap-4 px-4 py-4 transition hover:bg-slate-50 sm:px-6 sm:py-5 lg:flex-row lg:items-center"
+                    >
+                      <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+                        <input
+                          type="checkbox"
+                          form="gallery-selection-form"
+                          data-gallery-selection
+                          name="id"
+                          value={item.id}
+                          aria-label={`${item.originalName ?? item.fileName} auswählen`}
+                          className="mt-1 h-4 w-4 flex-shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        />
 
-                    {/* Thumbnail */}
-                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-                      <img
-                        src={item.url}
-                        alt={item.originalName ?? item.fileName}
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
+                        <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 sm:h-20 sm:w-20">
+                          <img
+                            src={item.url}
+                            alt={item.originalName ?? item.fileName}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
 
-                    {/* Info */}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-sm font-semibold text-slate-900">
-                        {item.originalName ?? item.fileName}
-                      </h3>
-                      <div className="mt-1 flex flex-wrap gap-2">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                            item.hidden
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-green-100 text-green-800"
-                          }`}
-                        >
-                          {item.hidden ? "Ausgeblendet" : "Sichtbar"}
-                        </span>
-                        <span className="text-xs text-slate-600">
-                          {formatDateTime(item.createdAt)}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          {formatBytes(item.sizeBytes)}
-                        </span>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="break-words text-sm font-semibold text-slate-900 sm:truncate">
+                            {item.originalName ?? item.fileName}
+                          </h3>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <span
+                              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                                item.hidden
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-green-100 text-green-800"
+                              }`}
+                            >
+                              {item.hidden ? "Ausgeblendet" : "Sichtbar"}
+                            </span>
+                            <span className="text-xs text-slate-600">
+                              {formatDateTime(item.createdAt)}
+                            </span>
+                            <span className="text-xs text-slate-500">
+                              {formatBytes(item.sizeBytes)}
+                            </span>
+                          </div>
+                          <p className="mt-2 break-all text-xs text-slate-500">
+                            {item.fileName}
+                          </p>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-2 flex-shrink-0">
-                      <a
-                        href={`/api/export?id=${item.id}`}
-                        className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
-                      >
-                        Download
-                      </a>
-                      <form action={toggleHidden}>
-                        <button
-                          type="submit"
-                          className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                      {/* Actions */}
+                      <div className="grid grid-cols-3 gap-2 sm:flex lg:w-auto lg:flex-shrink-0">
+                        <a
+                          href={`/api/export?id=${item.id}`}
+                          className="inline-flex items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
                         >
-                          {item.hidden ? "Einblenden" : "Ausblenden"}
-                        </button>
-                      </form>
-                      <form action={deleteItem}>
-                        <button
-                          type="submit"
-                          className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 transition hover:bg-red-100"
-                        >
-                          Löschen
-                        </button>
+                          Download
+                        </a>
+                        <form action={toggleHidden}>
+                          <button
+                            type="submit"
+                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                          >
+                            {item.hidden ? "Einblenden" : "Ausblenden"}
+                          </button>
+                        </form>
+                        <form action={deleteItem}>
+                          <button
+                            type="submit"
+                            className="w-full rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 transition hover:bg-red-100"
+                          >
+                            Löschen
+                          </button>
                       </form>
                     </div>
                   </div>

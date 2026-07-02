@@ -5,6 +5,7 @@ import { isAuthenticated } from "@/lib/auth";
 import { appConfig } from "@/lib/config";
 import { listMedia } from "@/lib/media-store";
 import { getSettings } from "@/lib/settings";
+import { ensureWhatsAppAutostart } from "@/lib/whatsapp";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ type PlayerPageProps = {
 
 export default async function PlayerPage({ searchParams }: PlayerPageProps) {
   const resolvedSearchParams = await searchParams;
+  ensureWhatsAppAutostart();
 
   if (!(await isAuthenticated())) {
     if (typeof resolvedSearchParams.password === "string") {
