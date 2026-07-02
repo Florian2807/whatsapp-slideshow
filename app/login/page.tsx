@@ -3,10 +3,20 @@ import { redirect } from "next/navigation";
 import { LoginForm } from "@/app/login/login-form";
 import { isAuthenticated } from "@/lib/auth";
 import { appConfig } from "@/lib/config";
+import { normalizeRedirectTarget } from "@/lib/redirect-target";
 
-export default async function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{
+    next?: string;
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const next = normalizeRedirectTarget(resolvedSearchParams.next);
+
   if (await isAuthenticated()) {
-    redirect("/dashboard");
+    redirect(next);
   }
 
   return (
@@ -25,7 +35,7 @@ export default async function LoginPage() {
           </p>
         </div>
 
-        <LoginForm />
+        <LoginForm next={next} />
       </section>
     </main>
   );

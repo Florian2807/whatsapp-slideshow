@@ -6,11 +6,17 @@ import { loginAction, type LoginState } from "@/app/login/actions";
 
 const initialState: LoginState = {};
 
-export function LoginForm() {
+type LoginFormProps = {
+  next?: string;
+};
+
+export function LoginForm({ next }: LoginFormProps) {
   const [state, action, pending] = useActionState(loginAction, initialState);
 
   return (
     <form action={action} className="space-y-4">
+      <input type="hidden" name="next" value={next ?? "/dashboard"} />
+
       <div className="space-y-2">
         <label
           htmlFor="password"
